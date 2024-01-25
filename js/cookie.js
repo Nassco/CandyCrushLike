@@ -46,7 +46,11 @@ export default class Cookie {
     // On stocke l'image dans l'objet cookie
     this.htmlImage = img;
   }
-
+  
+  vider() {
+    this.type = -1;
+    this.htmlImage.src = "";  // Supprimer l'image ou la remplacer par une image transparente
+  }
   cachee() {
     this.htmlImage.classList.add("cookie-cachee");
   }

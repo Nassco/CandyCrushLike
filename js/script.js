@@ -18,7 +18,7 @@ function init() {
 
   let c = document.querySelector("#chuteColonne");
     c.onclick = () => {
-        grille.chuteColonne(0);
+        grille.chuteToutesLesColonnes();
     }
 
   let b = document.querySelector("#buttonTestAlignement");

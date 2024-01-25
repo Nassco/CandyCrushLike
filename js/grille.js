@@ -115,6 +115,7 @@ export default class Grille {
     if (this.swap(cookie1, cookie2)) {
       console.log("On peut swapper");
       // on remet à zéro les cookies cliquées
+      this.traiterAlignementsEtChutes();
       cookie2.deselectionnee();
       this.cookiesCliquees = [];
     }else {
@@ -179,7 +180,16 @@ export default class Grille {
 
     return tab;
   }
-
+  
+  traiterAlignementsEtChutes() {
+    let alignementExiste = this.testAlignementTouteLaGrille();
+    while (alignementExiste) {
+      // Suppression des cookies alignés (ils sont vidés dans les méthodes de testAlignement)
+      this.chuteToutesLesColonnes(); // Faites tomber les cookies pour remplir les trous
+      alignementExiste = this.testAlignementTouteLaGrille(); // Vérifiez à nouveau les alignements
+    }
+  }
+  
   testAlignementTouteLaGrille() {
     let alignementExisteLigne = false;
     let alignementExisteColonne = false;
@@ -195,24 +205,33 @@ export default class Grille {
     }
     return alignementColonnes;
   }
-  testAlignementColonnes(colonne) {
+  testAlignementColonnes(colonne, tailleAlignementMax = 6) {
     let alignement = false;
-
-    for (let l = 0; l <= this.colonnes - 3; l++) {
-      let cookie1 = this.tabcookies[l][colonne];
-      let cookie2 = this.tabcookies[l + 1][colonne];
-      let cookie3 = this.tabcookies[l + 2][colonne];
-
-      if ((cookie1.type === cookie2.type) && (cookie2.type === cookie3.type)) {
-        cookie1.cachee();
-        cookie2.cachee();
-        cookie3.cachee();
-        alignement = true;
+    
+    for (let taille = tailleAlignementMax; taille >= 3; taille--) {
+      for (let l = 0; l <= this.lignes - taille; l++) {
+        let aligne = true;
+        let premierType = this.tabcookies[l][colonne].type;
+        
+        for (let delta = 1; delta < taille; delta++) {
+          if (this.tabcookies[l + delta][colonne].type !== premierType) {
+            aligne = false;
+            break;
+          }
+        }
+        
+        if (aligne) {
+          for (let delta = 0; delta < taille; delta++) {
+            this.tabcookies[l + delta][colonne].vider();
+          }
+          alignement = true;
+        }
       }
     }
     return alignement;
   }
-
+  
+  
   testAlignementToutesLesLignes() {
     let alignementLignes = false;
     for (let i = 0; i < this.lignes; i++) {
@@ -221,63 +240,45 @@ export default class Grille {
 
     return alignementLignes;
   }
-  testAlignementLignes(ligne) {
+  testAlignementLignes(l, tailleAlignementMax = 6) {
     let alignement = false;
-
-    let tabLigne = this.tabcookies[ligne];
-
-    for (let c = 0; c <= this.lignes - 3; c++) {
-        let cookie1 = tabLigne[c];
-        let cookie2 = tabLigne[c + 1];
-        let cookie3 = tabLigne[c + 2];
-
-      if ((cookie1.type === cookie2.type) && (cookie2.type === cookie3.type)) {
-        cookie1.cachee();
-        cookie2.cachee();
-        cookie3.cachee();
-        alignement = true;
+    
+    for (let taille = tailleAlignementMax; taille >= 3; taille--) {
+      for (let c = 0; c <= this.colonnes - taille; c++) {
+        let aligne = true;
+        let premierType = this.tabcookies[l][c].type;
+        
+        for (let delta = 1; delta < taille; delta++) {
+          if (this.tabcookies[l][c + delta].type !== premierType) {
+            aligne = false;
+            break;
+          }
+        }
+        
+        if (aligne) {
+          for (let delta = 0; delta < taille; delta++) {
+            this.tabcookies[l][c + delta].vider();
+          }
+          alignement = true;
+        }
       }
     }
     return alignement;
   }
-
-  /*
-  chuteColonne(colonne) {
-    let indexPremierCookieCache = -1;
-    let indexDernierCookieCache = -1;
-
-    for (let ligne = this.lignes - 1; ligne >= 0; ligne--) {
-      if (this.tabcookies[ligne][colonne].htmlImage.classList.contains("cookie-cachee")) {
-        indexPremierCookieCache = ligne;
-        break;
-      }
-    }
-    if (indexPremierCookieCache !== -1) {
-      for (let ligne = indexPremierCookieCache; ligne >= 0; ligne--) {
-        if (!this.tabcookies[ligne][colonne].htmlImage.classList.contains("cookie-cachee")) {
-          indexDernierCookieCache = ligne+1;
-          break;
-        }
-      }
-      if (indexDernierCookieCache === -1) {
-        indexDernierCookieCache = 0;
-      }
-    }
-    console.log("indexPremierCookieCache = " + indexPremierCookieCache);
-    console.log("indexDernierCookieCache = " + indexDernierCookieCache);
-    if (indexPremierCookieCache !== -1 && indexDernierCookieCache !== -1) {
-      this.compacteColonne(indexPremierCookieCache, indexDernierCookieCache, colonne);
+  
+  chuteToutesLesColonnes() {
+    for (let colonne = 0; colonne < this.colonnes; colonne++) {
+      this.chuteColonne(colonne);
     }
   }
-   */
-
+  
   chuteColonne(colonne) {
     let indexPremierTrou = -1;
     let indexFin = -1;
 
     // Trouver le premier trou
-    for (let ligne = this.lignes - 1; ligne > 0; ligne--) {
-      if (this.tabcookies[ligne][colonne].htmlImage.classList.contains("cookie-cachee")) {
+    for (let ligne = this.lignes - 1; ligne >= 0; ligne--) {
+      if (this.tabcookies[ligne][colonne].type === -1) {
         indexPremierTrou = ligne;
         break;
       }
@@ -290,7 +291,7 @@ export default class Grille {
 
     // Trouver le haut de la colonne ou un cookie
     for (let ligne = indexPremierTrou; ligne > 0; ligne--) {
-      if (!this.tabcookies[ligne][colonne].htmlImage.classList.contains("cookie-cachee")) {
+      if (this.tabcookies[ligne][colonne].type !== -1) {
         indexFin = ligne;
         break;
       }
@@ -301,28 +302,20 @@ export default class Grille {
     // Appeler compacteColonne pour déplacer les cookies vers le bas
     this.compacteColonne(indexPremierTrou, indexFin, colonne);
   }
-
+  
   compacteColonne(indexDebut, indexFin, colonne) {
-    let ligneSource = indexFin === -1 ? 0 : indexFin + 1;
-
-    for (let ligne = indexDebut; ligne > 0; ligne--) {
-      this.tabcookies[ligne][colonne].type = this.tabcookies[ligne - ligneSource][colonne].type;
-      let img = this.tabcookies[ligne][colonne].htmlImage;
-      img.src = Cookie.urlsImagesNormales[this.tabcookies[ligne][colonne].type];
+    for (let nombreDeDeplacement = indexDebut- indexFin; nombreDeDeplacement > 0 ; nombreDeDeplacement--) {
+      for (let ligne = indexDebut; ligne >= 0; ligne--) {
+        if (ligne === 0) {
+          this.tabcookies[0][colonne].type = Math.floor(Math.random()*6);
+          let img = this.tabcookies[0][colonne].htmlImage;
+          img.src = Cookie.urlsImagesNormales[this.tabcookies[0][colonne].type];
+        } else {
+          this.tabcookies[ligne][colonne].type = this.tabcookies[ligne - 1][colonne].type;
+          let img = this.tabcookies[ligne][colonne].htmlImage;
+          img.src = Cookie.urlsImagesNormales[this.tabcookies[ligne][colonne].type];
+        }
+      }
     }
-
-    // Les cases restantes en haut de la colonne sont laissées vides pour l'instant
   }
-
-  descendrePremiereColonne() {
-    for (let ligne = 8; ligne > 0; ligne--) {
-      this.tabcookies[ligne][0].type = this.tabcookies[ligne - 1][0].type
-      let img = this.tabcookies[ligne][0].htmlImage;
-      img.src = Cookie.urlsImagesNormales[this.tabcookies[ligne][0].type];
-    }
-    this.tabcookies[0][0].type = Math.floor(Math.random()*6);
-    let img = this.tabcookies[0][0].htmlImage;
-    img.src = Cookie.urlsImagesNormales[this.tabcookies[0][0].type];
-  }
-
 }
