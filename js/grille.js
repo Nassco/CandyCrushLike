@@ -188,6 +188,8 @@ export default class Grille {
   traiterAlignementsEtChutes() {
     let alignementExiste = this.testAlignementTouteLaGrille();
     while (alignementExiste) {
+      this.calculeScore();
+      this.mettreAJourAffichageScore();
       // Suppression des cookies alignés (ils sont vidés dans les méthodes de testAlignement)
       this.chuteToutesLesColonnes(); // Faites tomber les cookies pour remplir les trous
       alignementExiste = this.testAlignementTouteLaGrille(); // Vérifiez à nouveau les alignements
@@ -260,6 +262,7 @@ export default class Grille {
         }
         
         if (aligne) {
+          
           for (let delta = 0; delta < taille; delta++) {
             this.tabcookies[l][c + delta].vider();
           }
@@ -322,4 +325,26 @@ export default class Grille {
       }
     }
   }
+  
+  calculeScore() {
+    let score = 0;
+    for (let l = 0; l < this.lignes; l++) {
+      for (let c = 0; c < this.colonnes; c++) {
+        if (this.tabcookies[l][c].type === -1) {
+          score++;
+        }
+      }
+    }
+    return score;
+  }
+  
+  mettreAJourAffichageScore() {
+    const elementScore = document.getElementById('score');
+    if (elementScore) {
+      elementScore.innerText = this.score.toString();
+    } else {
+      console.error("Élément d'affichage du score non trouvé");
+    }
+  }
+  
 }
