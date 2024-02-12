@@ -4,7 +4,7 @@
 
 Ce projet est une implémentation d'un jeu inspiré de Candy Crush, où le but est d'aligner des cookies de même couleur pour les faire disparaître et marquer des points. Le jeu détecte les alignements de 3, 4, 5 ou 6 cookies identiques et permet aux colonnes de s'effondrer et de se remplir de nouveaux cookies une fois que les alignements sont effacés.
 
-Visitez le jeu ici : [Candy Crush Like](https://nassco.github.io/CandyCrush/)
+Visitez le jeu ici : [Candy Crush Like]([https://nassco.github.io/CandyCrush/](https://nassco.github.io/CandyCrushLike/))
 
 ## Fonctionnalités
 
