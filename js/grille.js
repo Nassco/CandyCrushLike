@@ -127,6 +127,10 @@ export default class Grille {
   swap(cookie1, cookie2) {
     if (!Cookie.swapDistancePossible(cookie1, cookie2)) return false;
     Cookie.swapCookies(cookie1, cookie2);
+    for  (let i = 10; i>=0; i--) {
+      this.testAlignementTouteLaGrille();
+      this.chuteToutesLesColonnes();
+    }
     return true;
   }
 
